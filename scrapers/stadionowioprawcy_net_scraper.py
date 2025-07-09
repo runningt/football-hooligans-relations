@@ -37,25 +37,24 @@ def fetch_relations(club_name):
 
     # Extract good relations (ZGODY)
     zgody = []
-    zgody_section = soup.find("h2", text="ZGODY")
+    zgody_section = soup.find("span", class_="far fa-handshake")
     if zgody_section:
-        for li in zgody_section.find_next("ul").find_all("li"):
-            zgody.append(li.get_text(strip=True))
+        zgody_list = zgody_section.find_next("p").find_all("a")
 
     # Extract bad relations (KOSY)
     kosy = []
-    kosy_section = soup.find("h2", text="KOSY")
+    kosy_section = soup.find("span", class_="far fa-hand-rock")
     if kosy_section:
-        for li in kosy_section.find_next("ul").find_all("li"):
-            kosy.append(li.get_text(strip=True))
+        kosy_list = kosy_section.find_next("br").find_next("p").find_all("a")
+        for link in kosy_list:
+            kosy.append(link.get_text(strip=True))
 
-    output_file = os.path.join(OUTPUT_DIR, f"{club_name}.csv")
     # Save to CSV
+    output_file = os.path.join(OUTPUT_DIR, f"{club_name}.csv")
     with open(output_file, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["Good Relations (ZGODY)", "Bad Relations (KOSY)"])
 
-        # Get the maximum length of zgody and kosy for proper row writing
         max_length = max(len(zgody), len(kosy))
         for i in range(max_length):
             good_relation = zgody[i] if i < len(zgody) else ""
