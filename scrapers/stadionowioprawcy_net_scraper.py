@@ -1,3 +1,5 @@
+"""stadionowioprawcy.net scrapper"""
+
 import csv
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -14,7 +16,9 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 def fetch_club_links():
-    response = requests.get(CLUBS_URL)
+    """Fetches the list of club links from stadionowioprawcy.net."""
+
+    response = requests.get(CLUBS_URL, timeout=20)
     soup = BeautifulSoup(response.content, "html.parser")
     club_links = []
 
@@ -27,8 +31,8 @@ def fetch_club_links():
 
 
 def fetch_relations(club_name):
-    club_url = f"{BASE_URL}/ekipy/{club_name}/"
-    response = requests.get(club_url)
+    """Fetches good and bad relations for a given club."""
+    response = requests.get(f"{BASE_URL}/ekipy/{club_name}/", timeout=20)
     soup = BeautifulSoup(response.content, "html.parser")
 
     # Extract good relations (ZGODY)
@@ -45,8 +49,8 @@ def fetch_relations(club_name):
         for li in kosy_section.find_next("ul").find_all("li"):
             kosy.append(li.get_text(strip=True))
 
-    # Save to CSV
     output_file = os.path.join(OUTPUT_DIR, f"{club_name}.csv")
+    # Save to CSV
     with open(output_file, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["Good Relations (ZGODY)", "Bad Relations (KOSY)"])
@@ -62,6 +66,7 @@ def fetch_relations(club_name):
 
 
 def main():
+    """main scrapper function"""
     club_links = fetch_club_links()
 
     # Use ThreadPoolExecutor for parallel scraping
